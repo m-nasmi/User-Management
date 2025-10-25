@@ -56,17 +56,14 @@ const FavoritesManagement = ({ user, onUpdate, onCancel }) => {
     setError(null);
 
     try {
-      const favoriteData =
-        favorites.length > 0
-          ? {
-              name: favorites[0].productName,
-              value: favorites[0].productValue,
-            }
-          : null;
+      const favoritesData = favorites.map((fav) => ({
+        name: fav.productName,
+        value: fav.productValue,
+      }));
 
       const updatedUser = await userAPI.updateUserFavorites(
         user.id,
-        favoriteData
+        favoritesData
       );
 
       onUpdate(updatedUser);

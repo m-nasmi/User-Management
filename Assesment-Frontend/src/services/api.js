@@ -30,8 +30,8 @@ export const userAPI = {
     return response.data;
   },
 
-  updateUserFavorites: async (id, favorite) => {
-    const response = await api.patch(`/users/${id}/favorites`, { favorite });
+  updateUserFavorites: async (id, favorites) => {
+    const response = await api.patch(`/users/${id}/favorites`, { favorites });
     return response.data;
   },
 };

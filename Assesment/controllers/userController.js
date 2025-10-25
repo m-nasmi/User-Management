@@ -65,15 +65,20 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, role, permissions } = req.body;
     const userId = req.params.id;
 
     const updateData = {};
     if (name) updateData.name = name;
     if (email) updateData.email = email;
+    if (role) updateData.role = role;
 
     if (Object.keys(updateData).length > 0) {
       await User.update(updateData, { where: { id: userId } });
+    }
+
+    if (permissions !== undefined) {
+      await Permission.update(permissions, { where: { userId } });
     }
 
     const updatedUser = await User.findByPk(userId, {
@@ -118,28 +123,26 @@ const deleteUser = async (req, res) => {
 const updateUserFavorites = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { favorite } = req.body;
+    const { favorite, favorites } = req.body;
 
     const user = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const favoritesToAdd = favorite ? [favorite] : favorites || [];
+
     await Favorite.destroy({ where: { userId } });
 
-    if (favorite) {
-      const favoriteData = {
+    if (favoritesToAdd.length > 0) {
+      const favoriteData = favoritesToAdd.map((fav) => ({
         userId,
         productName:
-          typeof favorite === "string"
-            ? favorite
-            : favorite.name || favorite.productName || favorite,
+          typeof fav === "string" ? fav : fav.name || fav.productName || fav,
         productValue:
-          typeof favorite === "object"
-            ? favorite.value || favorite.productValue
-            : null,
-      };
-      await Favorite.create(favoriteData);
+          typeof fav === "object" ? fav.value || fav.productValue : null,
+      }));
+      await Favorite.bulkCreate(favoriteData);
     }
 
     const updatedUser = await User.findByPk(userId, {
